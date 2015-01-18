@@ -32,6 +32,7 @@ public class YellowToteTracker{
 	public static Scalar Red,Blue,Green,Yellow,thresh_Lower,thresh_Higher,grey_Lower,grey_higher;
 	static NetworkTable table;
 	public static void main(String[] args) {
+		System.out.println("MAIN");
 		//required for openCV to work -call before any functions of oCV are used
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		Red = new Scalar(0, 0, 255);
@@ -46,14 +47,16 @@ public class YellowToteTracker{
 		grey_higher = new Scalar(81,84,54);
 		
 		NetworkTable.setClientMode();
-		NetworkTable.setIPAddress("roborio-3019.local");
+		NetworkTable.setIPAddress("roborio-1719.local");
 		table = NetworkTable.getTable("SmartDashboard");
 		
 		//main loop of the program
 		
 		while(true){
+			System.out.println("WHILELOOP");
 			try {
-				while(table.isConnected()){
+				
+				while(table.isConnected() ){
 					processImage();
 				}
 			} catch (Exception e) {
@@ -66,9 +69,10 @@ public class YellowToteTracker{
 	//opens a new connection to the Axis camera and opens a new snapshot "instance"
 	public static void processImage(){
 		try {
+			System.out.println("processImage()");
 			//the url of the camera snapshot to save ##.## with your team number
 			//Url url = new URL("http://10.##.##.11/axis-cgi/jpg/image.cgi");
-			URL url = new URL("http://10.30.19.11/axis-cgi/jpg/image.cgi");
+			URL url = new URL("http://10.17.19.101/axis-cgi/jpg/image.cgi");
 			URLConnection uc = url.openConnection();
 			//saves the image to a file
 			BufferedImage img = ImageIO.read((uc.getInputStream()));
@@ -229,12 +233,13 @@ public class YellowToteTracker{
 			//gui on the image
 			Core.line(frame, new Point(frame.width()/2,100),new Point(frame.width()/2,frame.height()-100), Blue);
 			Core.line(frame, new Point(150,frame.height()/2),new Point(frame.width()-150,frame.height()/2), Blue);
-			Core.putText(frame, "Team 3019 - Elijah Kaufman", new Point(0,20), 
+			Core.putText(frame, "Team 1719", new Point(0,20), 
 					Core.FONT_HERSHEY_PLAIN, 1, Red);
 			//view this file to see the vision tracking
 			//windows will update the image after every save
-
+			System.out.println("Writing image");
 			Highgui.imwrite("rectangle.png", frame);
+			System.out.println("Wrote Image");
 			//Highgui.imwrite("grey.jpg", grey);
 		//mostly for debugging but errors happen
 		} catch (Exception e) {
