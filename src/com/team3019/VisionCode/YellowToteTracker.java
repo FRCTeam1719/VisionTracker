@@ -33,6 +33,7 @@ public class YellowToteTracker{
 	static NetworkTable table;
 	public static void main(String[] args) {
 		System.out.println("MAIN");
+		
 		//required for openCV to work -call before any functions of oCV are used
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		Red = new Scalar(0, 0, 255);
@@ -53,7 +54,7 @@ public class YellowToteTracker{
 		//main loop of the program
 		
 		while(true){
-			System.out.println("WHILELOOP");
+			//System.out.println("WHILELOOP");
 			try {
 				
 				while(table.isConnected() ){
@@ -69,7 +70,7 @@ public class YellowToteTracker{
 	//opens a new connection to the Axis camera and opens a new snapshot "instance"
 	public static void processImage(){
 		try {
-			System.out.println("processImage()");
+			//System.out.println("processImage()");
 			//the url of the camera snapshot to save ##.## with your team number
 			//Url url = new URL("http://10.##.##.11/axis-cgi/jpg/image.cgi");
 			URL url = new URL("http://10.17.19.101/axis-cgi/jpg/image.cgi");
@@ -237,9 +238,9 @@ public class YellowToteTracker{
 					Core.FONT_HERSHEY_PLAIN, 1, Red);
 			//view this file to see the vision tracking
 			//windows will update the image after every save
-			System.out.println("Writing image");
+			//System.out.println("Writing image");
 			Highgui.imwrite("rectangle.png", frame);
-			System.out.println("Wrote Image");
+			//System.out.println("Wrote Image");
 			//Highgui.imwrite("grey.jpg", grey);
 		//mostly for debugging but errors happen
 		} catch (Exception e) {
@@ -258,4 +259,18 @@ public class YellowToteTracker{
 		double returnd = FOVft / Math.tan(33.5);
 		return returnd;
 	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
