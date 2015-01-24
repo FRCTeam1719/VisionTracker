@@ -36,28 +36,29 @@ public class YellowToteTracker{
 		
 		//required for openCV to work -call before any functions of oCV are used
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		//Define scalars, basically stored colors
 		Red = new Scalar(0, 0, 255);
 		Blue = new Scalar(255, 0, 0);
 		Green = new Scalar(0, 255, 0);
 		Yellow = new Scalar(0, 255, 255);
-		//for tape
-		thresh_Lower = new Scalar(62,102,0);
-		thresh_Higher = new Scalar(255,255,47);
+		//Our green thresholds
+		thresh_Lower = new Scalar(0,0,0);
+		thresh_Higher = new Scalar(70,255,70);
 		//for grey tote
 		grey_Lower = new Scalar(48,60,35);
 		grey_higher = new Scalar(81,84,54);
-		
-		NetworkTable.setClientMode();
-		NetworkTable.setIPAddress("roborio-1719.local");
-		table = NetworkTable.getTable("SmartDashboard");
+		System.out.println("Tables");
+		//NetworkTable.setClientMode();
+		//NetworkTable.setIPAddress("roborio-1719.local");
+		//table = NetworkTable.getTable("SmartDashboard");
 		
 		//main loop of the program
 		
 		while(true){
-			//System.out.println("WHILELOOP");
+			System.out.println("WHILELOOP");
 			try {
 				
-				while(table.isConnected() ){
+				while(/*table.isConnected()*/  true){
 					processImage();
 				}
 			} catch (Exception e) {
@@ -70,22 +71,25 @@ public class YellowToteTracker{
 	//opens a new connection to the Axis camera and opens a new snapshot "instance"
 	public static void processImage(){
 		try {
-			//System.out.println("processImage()");
+			System.out.println("processImage()");
 			//the url of the camera snapshot to save ##.## with your team number
 			//Url url = new URL("http://10.##.##.11/axis-cgi/jpg/image.cgi");
-			URL url = new URL("http://10.17.19.101/axis-cgi/jpg/image.cgi");
+			URL url = new URL("http://10.17.19.102/axis-cgi/jpg/image.cgi");
 			URLConnection uc = url.openConnection();
 			//saves the image to a file
 			BufferedImage img = ImageIO.read((uc.getInputStream()));
 			ImageIO.write(img, "png", new File("frame.png"));
 			//time for the OpenCV fun!
+			//Create mats, which are basically matrixes for storing images
 			Mat frame = new Mat();
 			Mat grey = new Mat();
 			Mat original = new Mat();
+			//Load frame.png into a mat
 			original = Highgui.imread("frame.png");
 			ArrayList<MatOfPoint> contours = new ArrayList<>();
-			//applies a threshhold in the form of BlueGreenRed
+			//Drop everything that isn't green
 			Core.inRange(original, thresh_Lower, thresh_Higher, frame);
+			/*
 			//find the cluster of particles
 			Imgproc.findContours(frame, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 			Imgproc.cvtColor(frame, frame, Imgproc.COLOR_GRAY2BGR);
@@ -230,7 +234,7 @@ public class YellowToteTracker{
 			for(MatOfPoint mop : contours){
 				Rect bb = Imgproc.boundingRect(mop);
 				Core.rectangle(grey, bb.tl(), bb.br(), Red);
-			}
+			} */
 			//gui on the image
 			Core.line(frame, new Point(frame.width()/2,100),new Point(frame.width()/2,frame.height()-100), Blue);
 			Core.line(frame, new Point(150,frame.height()/2),new Point(frame.width()-150,frame.height()/2), Blue);
