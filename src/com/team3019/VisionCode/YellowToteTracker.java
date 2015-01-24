@@ -6,7 +6,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 
@@ -14,7 +13,6 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
@@ -92,7 +90,7 @@ public class YellowToteTracker{
 			Mat original = new Mat();
 			Mat contrast = new Mat();
 			Mat colors = new Mat();
-			Mat contours = new Mat();
+			//Mat contours = new Mat();
 			//Load frame.png into a mat
 			original = Highgui.imread("frame.png");
 			
