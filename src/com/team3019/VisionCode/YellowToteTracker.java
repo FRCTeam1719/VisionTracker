@@ -6,6 +6,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 
@@ -13,6 +14,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
@@ -30,11 +32,13 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 public class YellowToteTracker{
 	public static Scalar Red,Blue,Green,Yellow,thresh_Lower,thresh_Higher,grey_Lower,grey_higher;
 	static NetworkTable table;
+	public static ArrayList<MatOfPoint> contourList = new ArrayList<>();
 	public static void main(String[] args) {
 		System.out.println("MAIN");
 		
 		//required for openCV to work -call before any functions of oCV are used
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		
 		//Define scalars, basically stored colors
 		Red = new Scalar(0, 0, 255);
 		Blue = new Scalar(255, 0, 0);
@@ -46,6 +50,7 @@ public class YellowToteTracker{
 		//for grey tote
 		grey_Lower = new Scalar(48,60,35);
 		grey_higher = new Scalar(81,84,54);
+		
 		//NetworkTable.setClientMode();
 		//NetworkTable.setIPAddress("roborio-1719.local");
 		//table = NetworkTable.getTable("SmartDashboard");
@@ -79,33 +84,47 @@ public class YellowToteTracker{
 			//Save the frame we just got from the camera, and write it to a file
 			BufferedImage img = ImageIO.read((uc.getInputStream()));
 			ImageIO.write(img, "png", new File("frame.png"));
+			
+			
 			//PROCESSING
 			//Create mats, which are basically matrixes for storing images
-			Mat frame = new Mat();
+			Mat result = new Mat();
 			Mat original = new Mat();
+			Mat contrast = new Mat();
+			Mat colors = new Mat();
+			Mat contours = new Mat();
 			//Load frame.png into a mat
 			original = Highgui.imread("frame.png");
 			
 			//Raise the contrast
-			frame = raiseContrast(original);
+			contrast = raiseContrast(original);
 			
-			
-			/*Not currently in use
 			//Drop everything that isn't green
-			//Core.inRange(original, thresh_Lower, thresh_Higher, frame);
-			//Draw contours
-			//ArrayList<MatOfPoint> contours = new ArrayList<>();
-			*/
+			Core.inRange(contrast, thresh_Lower, thresh_Higher, colors);
+			
+			//Count the number of white pixels
+			if(Core.countNonZero(colors) > 70000){
+				System.out.println("FOUND IT");
+				System.out.println(Core.countNonZero(colors));
+			}else {
+				System.out.println("KILL ME");
+				System.out.println(Core.countNonZero(colors));
+			}
+			
+			
+			result = colors;
 			
 			//WRITING
 			//Put the crosshairs on the image
-			Core.line(frame, new Point(frame.width()/2,100),new Point(frame.width()/2,frame.height()-100), Blue);
-			Core.line(frame, new Point(150,frame.height()/2),new Point(frame.width()-150,frame.height()/2), Blue);
+			Core.line(result, new Point(result.width()/2,100),new Point(result.width()/2,result.height()-100), Blue);
+			Core.line(result, new Point(150,result.height()/2),new Point(result.width()-150,result.height()/2), Blue);
 			//Write text on the image
-			Core.putText(frame, "Team 1719", new Point(0,20), 
+			Core.putText(result, "Team 1719", new Point(0,20), 
 					Core.FONT_HERSHEY_PLAIN, 1, Red);
 			//Write the final mat to a file
-			Highgui.imwrite("rectangle.png", frame);
+			Highgui.imwrite("rectangle.png", result);
+			Highgui.imwrite("contrast.png", contrast);
+			
 		//mostly for debugging but errors happen
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -137,6 +156,7 @@ public class YellowToteTracker{
 		Imgproc.cvtColor(ycrcb,result,Imgproc.COLOR_YCrCb2BGR);
 		return result;
 	}
+	
 	
 	
 	
