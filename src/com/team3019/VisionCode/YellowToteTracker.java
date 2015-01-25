@@ -43,15 +43,15 @@ public class YellowToteTracker{
 		Green = new Scalar(0, 255, 0);
 		Yellow = new Scalar(0, 255, 255);
 		//Our green thresholds
-		thresh_Lower = new Scalar(0,0,0);
+		thresh_Lower = new Scalar(0,30,0);
 		thresh_Higher = new Scalar(70,255,70);
 		//for grey tote
 		grey_Lower = new Scalar(48,60,35);
 		grey_higher = new Scalar(81,84,54);
 		
-		//NetworkTable.setClientMode();
-		//NetworkTable.setIPAddress("roborio-1719.local");
-		//table = NetworkTable.getTable("SmartDashboard");
+		NetworkTable.setClientMode();
+		NetworkTable.setIPAddress("roborio-1719.local");
+		table = NetworkTable.getTable("SmartDashboard");
 		
 		//main loop of the program
 		
@@ -95,10 +95,10 @@ public class YellowToteTracker{
 			original = Highgui.imread("frame.png");
 			
 			//Raise the contrast
-			contrast = raiseContrast(original);
+			//contrast = raiseContrast(original);
 			
 			//Drop everything that isn't green
-			Core.inRange(contrast, thresh_Lower, thresh_Higher, colors);
+			Core.inRange(original, thresh_Lower, thresh_Higher, colors);
 			
 			//Count the number of white pixels
 			if(Core.countNonZero(colors) > 70000){
@@ -121,7 +121,7 @@ public class YellowToteTracker{
 					Core.FONT_HERSHEY_PLAIN, 1, Red);
 			//Write the final mat to a file
 			Highgui.imwrite("rectangle.png", result);
-			Highgui.imwrite("contrast.png", contrast);
+			//Highgui.imwrite("contrast.png", contrast);
 			
 		//mostly for debugging but errors happen
 		} catch (Exception e) {
