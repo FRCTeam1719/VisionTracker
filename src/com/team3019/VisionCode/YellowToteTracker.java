@@ -1,5 +1,6 @@
 package com.team3019.VisionCode;
 
+import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
@@ -8,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JSlider;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -29,8 +33,22 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class YellowToteTracker{
 	public static Scalar Red,Blue,Green,Yellow,thresh_Lower,thresh_Higher,grey_Lower,grey_higher;
-	static NetworkTable table;
 	public static ArrayList<MatOfPoint> contourList = new ArrayList<>();
+	static NetworkTable table;
+	static final int MIN_VAL = 0;
+	static final int MAX_VAL = 255;
+	static final int INIT_VAL = 0;
+	
+	//Window frame
+	static JFrame frame = new JFrame ("VisionTracker");
+	//Sliders
+	static JSlider lowBlue = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
+	static JSlider lowGreen = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
+	static JSlider lowRed = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
+	static JSlider highBlue = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
+	static JSlider highGreen = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
+	static JSlider highRed = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
+
 	public static void main(String[] args) {
 		System.out.println("MAIN");
 		
@@ -43,15 +61,48 @@ public class YellowToteTracker{
 		Green = new Scalar(0, 255, 0);
 		Yellow = new Scalar(0, 255, 255);
 		//Our green thresholds
-		thresh_Lower = new Scalar(0,30,0);
-		thresh_Higher = new Scalar(70,255,70);
+		//thresh_Lower = new Scalar(0,30,0);
+		//thresh_Higher = new Scalar(70,255,70);
 		//for grey tote
 		grey_Lower = new Scalar(48,60,35);
 		grey_higher = new Scalar(81,84,54);
 		
-		NetworkTable.setClientMode();
-		NetworkTable.setIPAddress("roborio-1719.local");
-		table = NetworkTable.getTable("SmartDashboard");
+		//NETWORKING INIT
+		//NetworkTable.setClientMode();
+		//NetworkTable.setIPAddress("roborio-1719.local");
+		//table = NetworkTable.getTable("SmartDashboard");
+		
+		//WINDOW INIT
+		//Close on exit
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//Setup labels
+		JLabel lowBlueL = new JLabel("Low Blue");
+		JLabel lowGreenL = new JLabel("Low Green");
+		JLabel lowRedL = new JLabel("Low Red");
+		JLabel highBlueL = new JLabel("High Blue");
+		JLabel highGreenL = new JLabel("High Green");
+		JLabel highRedL = new JLabel("High Red");
+
+		//Add components to the frame
+		frame.setLayout(new GridLayout(12,1));
+		frame.add(lowBlueL);
+		frame.add(lowBlue);
+		frame.add(lowGreenL);
+		frame.add(lowGreen);
+		frame.add(lowRedL);
+		frame.add(lowRed);
+		frame.add(highBlueL);
+		frame.add(highBlue);
+		frame.add(highGreenL);
+		frame.add(highGreen);
+		frame.add(highRedL);
+		frame.add(highRed);
+
+		//Add labels to the frame
+		//Sizing
+		frame.pack();
+		//Show the frame
+		frame.setVisible(true);
 		
 		//main loop of the program
 		
@@ -73,6 +124,7 @@ public class YellowToteTracker{
 		try {
 			System.out.println("processImage()");
 			
+			System.out.println((int)lowBlue.getValue());
 			//NETWORKING
 			//Connect to the camera
 			//the url of the camera snapshot to save ##.## with your team number
@@ -83,17 +135,17 @@ public class YellowToteTracker{
 			BufferedImage img = ImageIO.read((uc.getInputStream()));
 			ImageIO.write(img, "png", new File("frame.png"));
 			
-			
+			//Pull from our sliders
+			thresh_Lower = new Scalar(lowBlue.getValue(),lowGreen.getValue(),lowRed.getValue());
+			thresh_Higher = new Scalar(highBlue.getValue(),highGreen.getValue(),highRed.getValue());
 			//PROCESSING
 			//Create mats, which are basically matrixes for storing images
 			Mat result = new Mat();
 			Mat original = new Mat();
-			Mat contrast = new Mat();
 			Mat colors = new Mat();
 			//Mat contours = new Mat();
 			//Load frame.png into a mat
 			original = Highgui.imread("frame.png");
-			
 			//Raise the contrast
 			//contrast = raiseContrast(original);
 			
@@ -101,6 +153,7 @@ public class YellowToteTracker{
 			Core.inRange(original, thresh_Lower, thresh_Higher, colors);
 			
 			//Count the number of white pixels
+			System.out.println("COUNT");
 			if(Core.countNonZero(colors) > 70000){
 				System.out.println("FOUND IT");
 				System.out.println(Core.countNonZero(colors));
@@ -108,7 +161,6 @@ public class YellowToteTracker{
 				System.out.println("KILL ME");
 				System.out.println(Core.countNonZero(colors));
 			}
-			
 			
 			result = colors;
 			
