@@ -38,7 +38,9 @@ public class YellowToteTracker{
 	static final int MIN_VAL = 0;
 	static final int MAX_VAL = 255;
 	static final int INIT_VAL = 0;
-	
+	static final int NONZERO_MIN = 0;
+	static final int NONZERO_MAX = 70000000;
+	static final int NONZERO_INIT = 70000;
 	//Window frame
 	static JFrame frame = new JFrame ("VisionTracker");
 	//Sliders
@@ -48,7 +50,7 @@ public class YellowToteTracker{
 	static JSlider highBlue = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
 	static JSlider highGreen = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
 	static JSlider highRed = new JSlider(JSlider.HORIZONTAL, MIN_VAL, MAX_VAL, INIT_VAL);
-
+	static JSlider nonZeroThresh = new JSlider(JSlider.HORIZONTAL, NONZERO_MIN, NONZERO_MAX, NONZERO_INIT);
 	public static void main(String[] args) {
 		System.out.println("MAIN");
 		
@@ -82,8 +84,10 @@ public class YellowToteTracker{
 		JLabel highBlueL = new JLabel("High Blue");
 		JLabel highGreenL = new JLabel("High Green");
 		JLabel highRedL = new JLabel("High Red");
+		JLabel nonZeroL = new JLabel("Non-Zero Threshold");
 
 		//Add components to the frame
+		//TODO Make the image viewable in swing
 		frame.setLayout(new GridLayout(12,1));
 		frame.add(lowBlueL);
 		frame.add(lowBlue);
@@ -97,6 +101,8 @@ public class YellowToteTracker{
 		frame.add(highGreen);
 		frame.add(highRedL);
 		frame.add(highRed);
+		frame.add(nonZeroL);
+		frame.add(nonZeroThresh);
 
 		//Add labels to the frame
 		//Sizing
@@ -113,7 +119,6 @@ public class YellowToteTracker{
 					processImage();
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				break;
 			}
@@ -152,9 +157,11 @@ public class YellowToteTracker{
 			//Drop everything that isn't green
 			Core.inRange(original, thresh_Lower, thresh_Higher, colors);
 			
+			//TODO Shaping?
 			//Count the number of white pixels
 			System.out.println("COUNT");
-			if(Core.countNonZero(colors) > 70000){
+			int nonZeroThreshold = nonZeroThresh.getValue();
+			if(Core.countNonZero(colors) > nonZeroThreshold){
 				System.out.println("FOUND IT");
 				System.out.println(Core.countNonZero(colors));
 			}else {
@@ -166,9 +173,10 @@ public class YellowToteTracker{
 			
 			//WRITING
 			//Put the crosshairs on the image
-			Core.line(result, new Point(result.width()/2,100),new Point(result.width()/2,result.height()-100), Blue);
-			Core.line(result, new Point(150,result.height()/2),new Point(result.width()-150,result.height()/2), Blue);
+			//Core.line(result, new Point(result.width()/2,100),new Point(result.width()/2,result.height()-100), Blue);
+			//Core.line(result, new Point(150,result.height()/2),new Point(result.width()-150,result.height()/2), Blue);
 			//Write text on the image
+			//TODO Found/Not found in the image
 			Core.putText(result, "Team 1719", new Point(0,20), 
 					Core.FONT_HERSHEY_PLAIN, 1, Red);
 			//Write the final mat to a file
@@ -177,7 +185,6 @@ public class YellowToteTracker{
 			
 		//mostly for debugging but errors happen
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();	
 		}
 	}
@@ -189,7 +196,7 @@ public class YellowToteTracker{
 		Mat result = input;
 		//Convert our input mat to the YCrCb colorspace
 		Imgproc.cvtColor(input, ycrcb, Imgproc.COLOR_BGR2YCrCb);
-		//Create and arraylist for storing the channels of the image
+		//Create an arraylist for storing the channels of the image
 		ArrayList<Mat> channels = new ArrayList<Mat>();
 		//Split our mat into the arrayList of channels
 		Core.split(ycrcb, channels);
