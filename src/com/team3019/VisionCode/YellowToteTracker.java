@@ -41,6 +41,7 @@ public class YellowToteTracker{
 	static final int NONZERO_MIN = 0;
 	static final int NONZERO_MAX = 70000000;
 	static final int NONZERO_INIT = 70000;
+	static boolean foundit = false;
 	//Window frame
 	static JFrame frame = new JFrame ("VisionTracker");
 	//Sliders
@@ -70,10 +71,12 @@ public class YellowToteTracker{
 		grey_higher = new Scalar(81,84,54);
 		
 		//NETWORKING INIT
-		//NetworkTable.setClientMode();
-		//NetworkTable.setIPAddress("roborio-1719.local");
-		//table = NetworkTable.getTable("SmartDashboard");
-		
+		System.out.println("Networking init");
+		NetworkTable.setClientMode();
+		NetworkTable.setIPAddress("roboRIO-1719.local");
+		table = NetworkTable.getTable("SmartDashboard");
+		table.putBoolean("foundtarget", foundit);
+		System.out.println("Window init");
 		//WINDOW INIT
 		//Close on exit
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -84,8 +87,8 @@ public class YellowToteTracker{
 		JLabel highBlueL = new JLabel("High Blue");
 		JLabel highGreenL = new JLabel("High Green");
 		JLabel highRedL = new JLabel("High Red");
-		JLabel nonZeroL = new JLabel("Non-Zero Threshold");
-
+		JLabel nonZeroL = new JLabel("Non-Zero Threshold");		
+		
 		//Add components to the frame
 		//TODO Make the image viewable in swing
 		frame.setLayout(new GridLayout(12,1));
@@ -141,8 +144,10 @@ public class YellowToteTracker{
 			ImageIO.write(img, "png", new File("frame.png"));
 			
 			//Pull from our sliders
-			thresh_Lower = new Scalar(lowBlue.getValue(),lowGreen.getValue(),lowRed.getValue());
-			thresh_Higher = new Scalar(highBlue.getValue(),highGreen.getValue(),highRed.getValue());
+			//thresh_Lower = new Scalar(lowBlue.getValue(),lowGreen.getValue(),lowRed.getValue());
+			//thresh_Higher = new Scalar(highBlue.getValue(),highGreen.getValue(),highRed.getValue());
+			thresh_Lower = new Scalar(30,30,30);
+			thresh_Higher = new Scalar(90,255,90);
 			//PROCESSING
 			//Create mats, which are basically matrixes for storing images
 			Mat result = new Mat();
@@ -160,15 +165,26 @@ public class YellowToteTracker{
 			//TODO Shaping?
 			//Count the number of white pixels
 			System.out.println("COUNT");
-			int nonZeroThreshold = nonZeroThresh.getValue();
+			int nonZeroThreshold = 100000;
 			if(Core.countNonZero(colors) > nonZeroThreshold){
 				System.out.println("FOUND IT");
-				System.out.println(Core.countNonZero(colors));
+				System.out.println("nonZeroCount " + Core.countNonZero(colors));
+				System.out.println("nonZeroThresh" + nonZeroThreshold);
+				System.out.println("B" + highBlue.getValue());
+				System.out.println("G" + highGreen.getValue());
+				System.out.println("R" + highRed.getValue());
+				foundit = true;
 			}else {
 				System.out.println("KILL ME");
-				System.out.println(Core.countNonZero(colors));
+				System.out.println("nonZeroCount" + Core.countNonZero(colors));
+				System.out.println("nonZeroThresh" + nonZeroThreshold);
+				System.out.println("B" + highBlue.getValue());
+				System.out.println("G" + highGreen.getValue());
+				System.out.println("R" + highRed.getValue());
+				foundit = false;
 			}
-			
+			//Post results to smartdashboard
+			table.putBoolean("foundtarget", foundit);
 			result = colors;
 			
 			//WRITING
@@ -176,9 +192,13 @@ public class YellowToteTracker{
 			//Core.line(result, new Point(result.width()/2,100),new Point(result.width()/2,result.height()-100), Blue);
 			//Core.line(result, new Point(150,result.height()/2),new Point(result.width()-150,result.height()/2), Blue);
 			//Write text on the image
-			//TODO Found/Not found in the image
-			Core.putText(result, "Team 1719", new Point(0,20), 
-					Core.FONT_HERSHEY_PLAIN, 1, Red);
+			if(foundit){
+			Core.putText(result, "Team 1719 - TARGET FOUND", new Point(0,20), 
+					Core.FONT_HERSHEY_PLAIN, 1, Green);
+			}else{
+				Core.putText(result, "Team 1719 - TARGET LOST", new Point(0,20),
+						Core.FONT_HERSHEY_PLAIN, 1, Red);
+			}
 			//Write the final mat to a file
 			Highgui.imwrite("rectangle.png", result);
 			//Highgui.imwrite("contrast.png", contrast);
